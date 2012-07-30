@@ -246,7 +246,7 @@ def heading(headingtext,headinglevel,lang='en'):
     # Return the combined paragraph
     return paragraph
 
-def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None, rowstyle=None, tableAlign=None):
+def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None, rowstyle=None, table_props=None):
     '''Get a list of lists, return a table
 
         @param list contents: A list of lists describing contents
@@ -285,10 +285,15 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
     tableprops = makeelement('tblPr')
     tablestyle = makeelement('tblStyle',attributes={'val':''})
     tableprops.append(tablestyle)
-    if not tableAlign:
-        tableAlign = 'left'
-    tableAlign = makeelement('jc',attributes={'val': tableAlign})
-    tableprops.append(tableAlign)
+    if not table_props:
+        table_props = {}
+    for k, attr in table_props.iteritems():
+        if isinstance(attr, etree._Element):        
+            tableprops.append(attr)            
+        else:
+            prop = makeelement(k, attributes=attr)
+            tableprops.append(prop)
+            
     tablewidth = makeelement('tblW',attributes={'w':str(tblw),'type':str(twunit)})
     tableprops.append(tablewidth)
     if len(borders.keys()):
