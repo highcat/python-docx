@@ -7,6 +7,7 @@ Part of Python's docx module - http://github.com/mikemaccana/python-docx
 See LICENSE for licensing information.
 '''
 
+from copy import deepcopy
 import logging
 from lxml import etree
 try:
@@ -352,7 +353,7 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
             rowprops.append(rowHeight)
             row.append(rowprops)
         i = 0
-        for content in contentrow:
+        for content_cell in contentrow:
             cell = makeelement('tc')
             # Properties
             cellprops = makeelement('tcPr')
@@ -360,28 +361,35 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
                 wattr = {'w':str(colw[i]),'type':cwunit}
             else:
                 wattr = {'w':'0','type':'auto'}
-            cellwidth = makeelement('tcW',attributes=wattr)
+            cellwidth = makeelement('tcW', attributes=wattr)
             cellprops.append(cellwidth)
+            align = 'left'
+            cell_spec_style = {}
+            if celstyle:
+                cell_spec_style = deepcopy(celstyle[i])
+            if isinstance(content_cell, dict):
+                cell_spec_style.update(content_cell['style'])                
+                content_cell = content_cell['content']
+            # spec. align property
+            SPEC_PROPS = ['align',]
+            if 'align' in cell_spec_style:
+                align = celstyle[i]['align']
+            # any property for cell, by OOXML specification
+            for cs, attrs in cell_spec_style.iteritems():
+                if cs in SPEC_PROPS:
+                    continue
+                cell_prop = makeelement(cs, attributes=attrs)
+                cellprops.append(cell_prop)
             cell.append(cellprops)
             # Paragraph (Content)
-            if not isinstance(content, (list, tuple)):
-                content = [content,]
-            for c in content:
-                align = 'left'
-                vAlign = 'bottom'
-                if celstyle:
-                    if 'align' in celstyle[i].keys():
-                        align = celstyle[i]['align']
-                    if 'vAlign' in celstyle[i].keys():
-                        vAlign = celstyle[i]['vAlign']
-                cellprops = makeelement('tcPr')
-                cellVAlign = makeelement('vAlign', attributes={'val': vAlign})
-                cellprops.append(cellVAlign)
-                cell.append(cellprops)
+            if not isinstance(content_cell, (list, tuple)):
+                content_cell = [content_cell,]
+            for c in content_cell:
+                # cell.append(cellprops)
                 if isinstance(c, etree._Element):
                     cell.append(c)
                 else:
-                    cell.append(paragraph(c,jc=align))
+                    cell.append(paragraph(c, jc=align))
             row.append(cell)
             i += 1
         table.append(row)

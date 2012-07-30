@@ -60,14 +60,17 @@ if __name__ == '__main__':
     
     # Append a table
     CELL_SIZE = 12*50 # twenties of a point
-    docbody.append(dx.table([['A1',spec_cell,'A3'],
+    docbody.append(dx.table([['A1',
+                              {'content': spec_cell, 'style': {'vAlign': {'val': 'top'},
+                                                               'shd': {'fill': '777777'}}},
+                              ('A3', 'ttt')],
                              ['B1','B2','B3'],
                              ['C1','C2','C3']],
         heading=False,                            
         colw=[CELL_SIZE]*3,
         cwunit='dxa', # twenties of a point
         borders={'all': {'color': 0xAAAAAA}},
-        celstyle=[{'align': 'center', 'vAlign': 'center'}]*3,
+        celstyle=[{'align': 'right', 'vAlign': {'val': 'center'}}]*3,
         rowstyle={'height': CELL_SIZE},
         tableAlign='center',
     ))
