@@ -19,19 +19,6 @@ if __name__ == '__main__':
     # This xpath location is where most interesting content lives 
     docbody = document.xpath('/w:document/w:body', namespaces=dx.nsprefixes)[0]
 
-    # Append a table
-    CELL_SIZE = 12*80 # twenties of a point
-    docbody.append(dx.table([['A1','A2','A3'],
-                             ['B1','B2','B3'],
-                             ['C1','C2','C3']],
-        heading=False,                            
-        colw=[CELL_SIZE]*3,
-        cwunit='dxa', # twenties of a point
-        borders={'all': {'color': 0xAAAAAA}},
-        celstyle=[{'align': 'center', 'vAlign': 'center'}]*3,
-        rowstyle={'height': CELL_SIZE},
-    ))
-
     # Append two headings and a paragraph
     docbody.append(dx.heading('''Welcome to Python's docx module''',1)  )   
     docbody.append(dx.heading('Make and edit docx in 200 lines of pure Python',2))
@@ -59,14 +46,37 @@ if __name__ == '__main__':
                   'Extract plain text of document',
                   'Add and delete items anywhere within the document']:
         docbody.append(dx.paragraph(point, style='ListBullet'))
-        
+
     # Add an image
     relationships, picpara = dx.picture(
         relationships,
         'image1.png',
         'This is a test description')
     docbody.append(picpara)
- 
+
+    spec_cell = dx.paragraph([
+        ('2', [dx.makeelement('vertAlign', attributes={'val': 'superscript'})]),
+        ])
+    
+    # Append a table
+    CELL_SIZE = 12*50 # twenties of a point
+    docbody.append(dx.table([['A1',spec_cell,'A3'],
+                             ['B1','B2','B3'],
+                             ['C1','C2','C3']],
+        heading=False,                            
+        colw=[CELL_SIZE]*3,
+        cwunit='dxa', # twenties of a point
+        borders={'all': {'color': 0xAAAAAA}},
+        celstyle=[{'align': 'center', 'vAlign': 'center'}]*3,
+        rowstyle={'height': CELL_SIZE},
+        tableAlign='center',
+    ))
+    
+    docbody.append(dx.paragraph([
+        ('hello', ''),
+        ('2', [dx.makeelement('vertAlign', attributes={'val': 'superscript'})]),
+        ]))
+    
     # Search and replace
     print 'Searching for something in a paragraph ...',
     if dx.search(docbody, 'the awesomeness'):

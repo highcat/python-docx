@@ -132,7 +132,7 @@ def pagebreak(type='page', orient='portrait'):
         pagebreak.append(pPr)
     return pagebreak
 
-def paragraph(paratext,style='BodyText',breakbefore=False,jc='left'):
+def paragraph(paratext, style='BodyText', breakbefore=False, jc='left'):
     '''Make a new paragraph element, containing a run, and some text.
     Return the paragraph element.
 
@@ -176,22 +176,28 @@ def paragraph(paratext,style='BodyText',breakbefore=False,jc='left'):
     for t in text:
         run = makeelement('r')
         rPr = makeelement('rPr')
-        # Apply styles
-        if t[1].find('b') > -1:
-            b = makeelement('b')
-            rPr.append(b)
-        if t[1].find('u') > -1:
-            u = makeelement('u',attributes={'val':'single'})
-            rPr.append(u)
-        if t[1].find('i') > -1:
-            i = makeelement('i')
-            rPr.append(i)
+        if isinstance(t[1], list):
+            for prop in t[1]: # custom properties
+                rPr.append(prop)
+        else:
+            # Apply styles
+            if t[1].find('b') > -1:
+                b = makeelement('b')
+                rPr.append(b)
+            if t[1].find('u') > -1:
+                u = makeelement('u',attributes={'val':'single'})
+                rPr.append(u)
+            if t[1].find('i') > -1:
+                i = makeelement('i')
+                rPr.append(i)
+            
         run.append(rPr)
         # Insert lastRenderedPageBreak for assistive technologies like
         # document narrators to know when a page break occurred.
         if breakbefore:
             lastRenderedPageBreak = makeelement('lastRenderedPageBreak')
             run.append(lastRenderedPageBreak)
+        print '****', t[0]
         run.append(t[0])
         paragraph.append(run)
     # Return the combined paragraph
@@ -240,7 +246,7 @@ def heading(headingtext,headinglevel,lang='en'):
     # Return the combined paragraph
     return paragraph
 
-def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None, rowstyle=None):
+def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None, rowstyle=None, tableAlign=None):
     '''Get a list of lists, return a table
 
         @param list contents: A list of lists describing contents
@@ -279,6 +285,10 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
     tableprops = makeelement('tblPr')
     tablestyle = makeelement('tblStyle',attributes={'val':''})
     tableprops.append(tablestyle)
+    if not tableAlign:
+        tableAlign = 'left'
+    tableAlign = makeelement('jc',attributes={'val': tableAlign})
+    tableprops.append(tableAlign)
     tablewidth = makeelement('tblW',attributes={'w':str(tblw),'type':str(twunit)})
     tableprops.append(tablewidth)
     if len(borders.keys()):
@@ -358,20 +368,20 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
             if not isinstance(content, (list, tuple)):
                 content = [content,]
             for c in content:
+                align = 'left'
+                vAlign = 'bottom'
+                if celstyle:
+                    if 'align' in celstyle[i].keys():
+                        align = celstyle[i]['align']
+                    if 'vAlign' in celstyle[i].keys():
+                        vAlign = celstyle[i]['vAlign']
+                cellprops = makeelement('tcPr')
+                cellVAlign = makeelement('vAlign', attributes={'val': vAlign})
+                cellprops.append(cellVAlign)
+                cell.append(cellprops)
                 if isinstance(c, etree._Element):
                     cell.append(c)
                 else:
-                    align = 'left'
-                    vAlign = 'bottom'
-                    if celstyle:
-                        if 'align' in celstyle[i].keys():
-                            align = celstyle[i]['align']
-                        if 'vAlign' in celstyle[i].keys():
-                            vAlign = celstyle[i]['vAlign']
-                    cellprops = makeelement('tcPr')
-                    cellVAlign = makeelement('vAlign', attributes={'val': vAlign})
-                    cellprops.append(cellVAlign)
-                    cell.append(cellprops)
                     cell.append(paragraph(c,jc=align))
             row.append(cell)
             i += 1
