@@ -197,7 +197,6 @@ def paragraph(paratext, style='BodyText', breakbefore=False, jc='left'):
         if breakbefore:
             lastRenderedPageBreak = makeelement('lastRenderedPageBreak')
             run.append(lastRenderedPageBreak)
-        print '****', t[0]
         run.append(t[0])
         paragraph.append(run)
     # Return the combined paragraph
