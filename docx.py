@@ -240,7 +240,7 @@ def heading(headingtext,headinglevel,lang='en'):
     # Return the combined paragraph
     return paragraph
 
-def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None):
+def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto', borders={}, celstyle=None, rowstyle=None):
     '''Get a list of lists, return a table
 
         @param list contents: A list of lists describing contents
@@ -335,6 +335,13 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
     # Contents Rows
     for contentrow in contents[1 if heading else 0:]:
         row = makeelement('tr')
+        if rowstyle:
+            rowprops = makeelement('trPr')
+            if 'height' in rowstyle:
+                rowHeight = makeelement('trHeight', attributes={'val': str(rowstyle['height']),
+                                                                'hRule': 'exact'})
+            rowprops.append(rowHeight)
+            row.append(rowprops)
         i = 0
         for content in contentrow:
             cell = makeelement('tc')
@@ -354,10 +361,17 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
                 if isinstance(c, etree._Element):
                     cell.append(c)
                 else:
-                    if celstyle and 'align' in celstyle[i].keys():
-                        align = celstyle[i]['align']
-                    else:
-                        align = 'left'
+                    align = 'left'
+                    vAlign = 'bottom'
+                    if celstyle:
+                        if 'align' in celstyle[i].keys():
+                            align = celstyle[i]['align']
+                        if 'vAlign' in celstyle[i].keys():
+                            vAlign = celstyle[i]['vAlign']
+                    cellprops = makeelement('tcPr')
+                    cellVAlign = makeelement('vAlign', attributes={'val': vAlign})
+                    cellprops.append(cellVAlign)
+                    cell.append(cellprops)
                     cell.append(paragraph(c,jc=align))
             row.append(cell)
             i += 1
