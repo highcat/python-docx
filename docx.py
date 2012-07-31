@@ -16,6 +16,7 @@ except ImportError:
     import Image
 import zipfile
 import shutil
+import distutils.dir_util
 import re
 import time
 import os
@@ -25,9 +26,11 @@ log = logging.getLogger(__name__)
 
 # Record template directory's location which is just 'template' for a docx
 # developer or 'site-packages/docx-template' if you have installed docx
-template_dir = join(os.path.dirname(__file__),'docx-template') # installed
-if not os.path.isdir(template_dir):
-    template_dir = join(os.path.dirname(__file__),'template') # dev
+TEMPLATE_DIR = join(os.path.dirname(__file__), 'docx-template') # installed
+if not os.path.isdir(TEMPLATE_DIR):
+    TEMPLATE_DIR = join(os.path.dirname(__file__), 'template') # dev
+
+_DOCX_DIR_NAME = 'docx-template'
 
 # All Word prefixes / namespace matches used in document.xml & core.xml.
 # LXML doesn't actually use prefixes (just the real namespace) , but these
@@ -144,7 +147,7 @@ def paragraph(paratext, style='BodyText', breakbefore=False, jc='left'):
 
     If paratext is a list, spawn multiple run/text elements.
     Support text styles (paratext must then be a list of lists in the form
-    <text> / <style>. Stile is a string containing a combination od 'bui' chars
+    <text> / <style>. Style is a string containing a combination of 'bui' chars
 
     example
     paratext = [
@@ -401,16 +404,18 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
     return table
 
 def picture(relationshiplist, picname, picdescription, pixelwidth=None,
-            pixelheight=None, nochangeaspect=True, nochangearrowheads=True):
+            pixelheight=None, nochangeaspect=True, nochangearrowheads=True,
+            temp_dir=None):
     '''Take a relationshiplist, picture file name, and return a paragraph containing the image
     and an updated relationshiplist'''
     # http://openxmldeveloper.org/articles/462.aspx
     # Create an image. Size may be specified, otherwise it will based on the
     # pixel size of image. Return a paragraph containing the picture'''
     # Copy the file into the media dir
-    media_dir = join(template_dir,'word','media')
+    assert temp_dir
+    media_dir = join(temp_dir, _DOCX_DIR_NAME, 'word', 'media')
     if not os.path.isdir(media_dir):
-        os.mkdir(media_dir)
+        os.makedirs(media_dir)
     shutil.copyfile(picname, join(media_dir,picname))
 
     # Check if the user has specified a size
@@ -882,14 +887,19 @@ def wordrelationships(relationshiplist):
         count += 1
     return relationships
 
-def savedocx(document,coreprops,appprops,contenttypes,websettings,wordrelationships,output):
+def savedocx(document, coreprops, appprops, contenttypes, websettings, wordrelationships, output,
+             temp_dir=None):
     '''Save a modified document'''
-    assert os.path.isdir(template_dir)
+    assert temp_dir
+    assert os.path.isdir(temp_dir)
+    docx_dir = join(temp_dir, _DOCX_DIR_NAME)
+    # Copy whole template to temporary directory
+    distutils.dir_util.copy_tree(TEMPLATE_DIR, docx_dir) # directory can already exist
     docxfile = zipfile.ZipFile(output,mode='w',compression=zipfile.ZIP_DEFLATED)
 
     # Move to the template data path
     prev_dir = os.path.abspath('.') # save previous working dir
-    os.chdir(template_dir)
+    os.chdir(docx_dir)
 
     # Serialize our trees into out zip file
     treesandfiles = {document:'word/document.xml',
@@ -909,7 +919,7 @@ def savedocx(document,coreprops,appprops,contenttypes,websettings,wordrelationsh
         for filename in filenames:
             if filename in files_to_ignore:
                 continue
-            templatefile = join(dirpath,filename)
+            templatefile = join(dirpath, filename)
             archivename = templatefile[2:]
             log.info('Saving: %s', archivename)
             docxfile.write(templatefile, archivename)
@@ -917,5 +927,3 @@ def savedocx(document,coreprops,appprops,contenttypes,websettings,wordrelationsh
     docxfile.close()
     os.chdir(prev_dir) # restore previous working dir
     return
-
-
