@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 This file makes an docx (Office 2007) file from scratch, showing off most of python-docx's features.
 
@@ -91,21 +91,21 @@ if __name__ == '__main__':
     ))
     
     # Search and replace
-    print 'Searching for something in a paragraph ...',
+    print('Searching for something in a paragraph ...',)
     if dx.search(docbody, 'the awesomeness'):
-         print 'found it!'
+         print('found it!')
     else:
-         print 'nope.'
+         print('nope.')
          
-    print 'Searching for something in a heading ...',
+    print('Searching for something in a heading ...',)
     if dx.search(docbody, '200 lines'):
-         print 'found it!'
+         print('found it!')
     else:
-         print 'nope.'
+         print('nope.')
     
-    print 'Replacing ...',
+    print('Replacing ...',)
     docbody = dx.replace(docbody,'the awesomeness','the goshdarned awesomeness') 
-    print 'done.'
+    print('done.')
 
     # Add a pagebreak
     docbody.append(dx.pagebreak(type='page', orient='portrait'))
@@ -138,9 +138,9 @@ if __name__ == '__main__':
         temp_dir=temp_dir,
         )
     temp_file.seek(0)
-    print "temp dir is:", temp_dir
+    print("temp dir is:", temp_dir)
     shutil.rmtree(temp_dir)
-    print "temp dir deleted"
+    print("temp dir deleted")
 
     f = open('example.docx', 'w+b')
     f.write(temp_file.read())

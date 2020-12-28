@@ -9,8 +9,8 @@ for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
 setup(name='docx',
-      version='0.0.2',
-      requires=['lxml'],
+      version='0.0.3',
+      requires=['lxml', 'pillow'],
       description='The docx module creates, reads and writes Microsoft Office Word 2007 docx files',
       author='Mike MacCana',
       author_email='python.docx@librelist.com',

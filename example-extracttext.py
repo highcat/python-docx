@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 This file opens a docx (Office 2007) file and dumps the text.
 

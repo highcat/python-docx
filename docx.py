@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 Open and modify Microsoft Word 2007 docx files (called 'OpenXML' and 'Office OpenXML' by Microsoft)
@@ -290,7 +290,7 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
     tableprops.append(tablestyle)
     if not table_props:
         table_props = {}
-    for k, attr in table_props.iteritems():
+    for k, attr in table_props.items():
         if isinstance(attr, etree._Element):        
             tableprops.append(attr)            
         else:
@@ -306,7 +306,7 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
                 k = 'all' if 'all' in borders.keys() else b
                 attrs = {}
                 for a in borders[k].keys():
-                    attrs[a] = unicode(borders[k][a])
+                    attrs[a] = str(borders[k][a])
                 borderelem = makeelement(b,attributes=attrs)
                 tableborders.append(borderelem)
         tableprops.append(tableborders)
@@ -383,7 +383,7 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0, twunit='auto'
             if 'align' in cell_spec_style:
                 align = celstyle[i]['align']
             # any property for cell, by OOXML specification
-            for cs, attrs in cell_spec_style.iteritems():
+            for cs, attrs in cell_spec_style.items():
                 if cs in SPEC_PROPS:
                     continue
                 cell_prop = makeelement(cs, attributes=attrs)
@@ -828,7 +828,7 @@ def appproperties():
     '''Create app-specific properties. See docproperties() for more common document properties.'''
     appprops = makeelement('Properties',nsprefix='ep')
     appprops = etree.fromstring(
-    '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    b'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"></Properties>''')
     props = {
             'Template':'Normal.dotm',
